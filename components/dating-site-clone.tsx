@@ -18,7 +18,7 @@ export function DatingSiteClone() {
     { id: 6, name: "Diego Mendoza", age: 35, location: "Iloilo", image: "/placeholder.svg?height=100&width=100" },
   ]
 
-  const filteredProfiles = profiles.filter(profile => 
+  const filteredProfiles = profiles.filter(profile =>
     profile.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     profile.location.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -27,7 +27,7 @@ export function DatingSiteClone() {
     <div className="min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
       <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-pink-600">Filipino Hearts</h1>
+          <h1 className="text-2xl font-bold text-pink-600">Pacific Partners</h1>
           <nav className="hidden md:flex space-x-4">
             <Button variant="ghost">Home</Button>
             <Button variant="ghost">Search</Button>
@@ -86,7 +86,7 @@ export function DatingSiteClone() {
 
       <footer className="bg-white mt-12">
         <div className="container mx-auto px-4 py-6 text-center text-gray-600">
-          <p>&copy; 2023 Filipino Hearts. All rights reserved.</p>
+          <p>&copy; 2024 Pacific Partners. All rights reserved.</p>
         </div>
       </footer>
     </div>
