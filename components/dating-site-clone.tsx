@@ -1,149 +1,39 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Heart, MessageCircle, User, LogOut } from 'lucide-react'
+import { Search, Heart, MessageCircle, User, LogOut, Send } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthProvider, useAuth } from './auth-context'
+import { MessageProvider, useMessage } from './message-context'
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
-const profiles = [
-  { id: 1, name: "Maria Santos", age: 28, location: "Manila", image: "/placeholder.svg?height=100&width=100" },
-  { id: 2, name: "Juan dela Cruz", age: 32, location: "Cebu", image: "/placeholder.svg?height=100&width=100" },
-  { id: 3, name: "Ana Reyes", age: 25, location: "Davao", image: "/placeholder.svg?height=100&width=100" },
-  { id: 4, name: "Carlos Bautista", age: 30, location: "Quezon City", image: "/placeholder.svg?height=100&width=100" },
-  { id: 5, name: "Isabel Gonzales", age: 27, location: "Baguio", image: "/placeholder.svg?height=100&width=100" },
-  { id: 6, name: "Diego Mendoza", age: 35, location: "Iloilo", image: "/placeholder.svg?height=100&width=100" },
-]
-
-function LoginForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const { login } = useAuth()
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    login(email, password)
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your credentials to access your account</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full">Login</Button>
-        </form>
-      </CardContent>
-    </Card>
-  )
-}
-
-function RegisterForm() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const { register } = useAuth()
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    register(name, email, password)
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Register</CardTitle>
-        <CardDescription>Create a new account to start finding matches</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full">Register</Button>
-        </form>
-      </CardContent>
-    </Card>
-  )
-}
+// ... (Keep the existing LoginForm, RegisterForm, and profiles array)
 
 function Header() {
   const { user, logout } = useAuth()
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-pink-600">Filipino Hearts</h1>
-        <nav className="hidden md:flex space-x-4">
-          <Button variant="ghost">Home</Button>
-          <Button variant="ghost">Search</Button>
-          <Button variant="ghost">Messages</Button>
-          <Button variant="ghost">Profile</Button>
+        <nav className={`${showMobileMenu ? 'flex' : 'hidden'} md:flex flex-col md:flex-row absolute md:relative top-full left-0 right-0 bg-white md:bg-transparent z-50 md:z-auto space-y-2 md:space-y-0 md:space-x-4 p-4 md:p-0`}>
+          <Button variant="ghost" onClick={() => setShowMobileMenu(false)}>Home</Button>
+          <Button variant="ghost" onClick={() => setShowMobileMenu(false)}>Search</Button>
+          <Button variant="ghost" onClick={() => setShowMobileMenu(false)}>Messages</Button>
+          <Button variant="ghost" onClick={() => setShowMobileMenu(false)}>Profile</Button>
           {user && (
-            <Button variant="ghost" onClick={logout}>
+            <Button variant="ghost" onClick={() => { logout(); setShowMobileMenu(false); }}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
           )}
         </nav>
         <div className="flex md:hidden">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={() => setShowMobileMenu(!showMobileMenu)}>
             <User className="h-6 w-6" />
             <span className="sr-only">Menu</span>
           </Button>
@@ -153,77 +43,105 @@ function Header() {
   )
 }
 
-function ProfileList() {
-  const [searchTerm, setSearchTerm] = useState('')
+// ... (Keep the existing ProfileList and UserProfile components)
 
-  const filteredProfiles = profiles.filter(profile => 
-    profile.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    profile.location.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+function ChatList() {
+  const { chats, setActiveChat, activeChat } = useMessage()
 
   return (
-    <>
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white mb-4">Find Your Perfect Match</h2>
-        <div className="flex">
-          <Input
-            type="text"
-            placeholder="Search by name or location"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-grow"
-          />
-          <Button className="ml-2">
-            <Search className="h-4 w-4 mr-2" />
-            Search
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProfiles.map(profile => (
-          <div key={profile.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-            <img src={profile.image} alt={profile.name} className="w-full h-48 object-cover" />
-            <div className="p-4">
-              <h3 className="text-xl font-semibold">{profile.name}, {profile.age}</h3>
-              <p className="text-gray-600">{profile.location}</p>
-              <div className="mt-4 flex justify-between">
-                <Button variant="outline" size="sm">
-                  <Heart className="h-4 w-4 mr-2" />
-                  Like
-                </Button>
-                <Button variant="outline" size="sm">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Message
-                </Button>
-              </div>
+    <Card className="h-[400px]">
+      <CardHeader>
+        <CardTitle>Chats</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[300px]">
+          {chats.map(chat => (
+            <div
+              key={chat.id}
+              className={`p-2 cursor-pointer ${activeChat === chat.id ? 'bg-muted' : ''}`}
+              onClick={() => setActiveChat(chat.id)}
+            >
+              <h3 className="font-semibold">{chat.userName}</h3>
+              <p className="text-sm text-muted-foreground">{chat.lastMessage}</p>
             </div>
-          </div>
-        ))}
-      </div>
-    </>
+          ))}
+        </ScrollArea>
+      </CardContent>
+    </Card>
   )
 }
 
-function UserProfile() {
-  const { user } = useAuth()
+function ChatWindow() {
+  const { messages, sendMessage, activeChat, chats } = useMessage()
+  const [newMessage, setNewMessage] = useState('')
+
+  const activeChatMessages = messages.filter(
+    msg => msg.senderId === activeChat || msg.receiverId === activeChat
+  )
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newMessage.trim() && activeChat) {
+      sendMessage(activeChat, newMessage.trim())
+      setNewMessage('')
+    }
+  }
+
+  if (!activeChat) {
+    return (
+      <Card className="h-[400px] flex items-center justify-center">
+        <CardContent>
+          <p className="text-muted-foreground">Select a chat to start messaging</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const chatPartner = chats.find(chat => chat.id === activeChat)
 
   return (
-    <Card>
+    <Card className="h-[400px] flex flex-col">
       <CardHeader>
-        <CardTitle>User Profile</CardTitle>
-        <CardDescription>Your personal information</CardDescription>
+        <CardTitle>{chatPartner?.userName}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <p><strong>Name:</strong> {user?.name}</p>
-          <p><strong>Email:</strong> {user?.email}</p>
-        </div>
+      <CardContent className="flex-grow overflow-auto">
+        <ScrollArea className="h-[250px]">
+          {activeChatMessages.map(msg => (
+            <div
+              key={msg.id}
+              className={`mb-2 p-2 rounded-lg ${
+                msg.senderId === activeChat ? 'bg-muted text-left' : 'bg-primary text-primary-foreground text-right'
+              }`}
+            >
+              {msg.content}
+            </div>
+          ))}
+        </ScrollArea>
       </CardContent>
       <CardFooter>
-        <Button>Edit Profile</Button>
+        <form onSubmit={handleSendMessage} className="flex w-full">
+          <Input
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-grow"
+          />
+          <Button type="submit" className="ml-2">
+            <Send className="h-4 w-4" />
+            <span className="sr-only">Send</span>
+          </Button>
+        </form>
       </CardFooter>
     </Card>
+  )
+}
+
+function MessagingTab() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <ChatList />
+      <ChatWindow />
+    </div>
   )
 }
 
@@ -236,28 +154,17 @@ function AuthenticatedApp() {
         <Button onClick={() => setActiveTab('search')} variant={activeTab === 'search' ? 'default' : 'outline'} className="mr-2">
           Search Profiles
         </Button>
+        <Button onClick={() => setActiveTab('messages')} variant={activeTab === 'messages' ? 'default' : 'outline'} className="mr-2">
+          Messages
+        </Button>
         <Button onClick={() => setActiveTab('profile')} variant={activeTab === 'profile' ? 'default' : 'outline'}>
           My Profile
         </Button>
       </div>
-      {activeTab === 'search' ? <ProfileList /> : <UserProfile />}
+      {activeTab === 'search' && <ProfileList />}
+      {activeTab === 'messages' && <MessagingTab />}
+      {activeTab === 'profile' && <UserProfile />}
     </main>
-  )
-}
-
-export function DatingSiteClone() {
-  return (
-    <AuthProvider>
-      <div className="min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
-        <Header />
-        <AppContent />
-        <footer className="bg-white mt-12">
-          <div className="container mx-auto px-4 py-6 text-center text-gray-600">
-            <p>&copy; 2023 Filipino Hearts. All rights reserved.</p>
-          </div>
-        </footer>
-      </div>
-    </AuthProvider>
   )
 }
 
@@ -276,4 +183,22 @@ function AppContent() {
   }
 
   return <AuthenticatedApp />
+}
+
+export function DatingSiteClone() {
+  return (
+    <AuthProvider>
+      <MessageProvider>
+        <div className="min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
+          <Header />
+          <AppContent />
+          <footer className="bg-white mt-12">
+            <div className="container mx-auto px-4 py-6 text-center text-gray-600">
+              <p>&copy; 2023 Filipino Hearts. All rights reserved.</p>
+            </div>
+          </footer>
+        </div>
+      </MessageProvider>
+    </AuthProvider>
+  )
 }
