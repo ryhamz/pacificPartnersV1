@@ -1,16 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Heart, MessageCircle, User, LogOut, Send } from 'lucide-react'
+import { Search, Heart, MessageCircle, User, LogOut, Send, Edit } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { AuthProvider, useAuth } from './auth-context'
 import { MessageProvider, useMessage } from './message-context'
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
-// ... (Keep the existing LoginForm, RegisterForm, and profiles array)
+// ... (Keep the existing LoginForm, RegisterForm, Header, ProfileList, ChatList, ChatWindow, and MessagingTab components)
 
 function Header() {
   const { user, logout } = useAuth()
@@ -43,132 +44,105 @@ function Header() {
   )
 }
 
-// ... (Keep the existing ProfileList and UserProfile components)
+function UserProfile() {
+  const { user } = useAuth()
+  const [isEditing, setIsEditing] = useState(false)
 
-function ProfileList() {
-  const profiles = [
-    { id: 1, name: 'Maria Santos', age: 28, location: 'Manila' },
-    { id: 2, name: 'Juan dela Cruz', age: 32, location: 'Cebu' },
-    { id: 3, name: 'Ana Reyes', age: 25, location: 'Davao' },
-    // Add more profiles as needed
-  ];
+  if (!user) return null
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {profiles.map(profile => (
-        <Card key={profile.id}>
-          <CardHeader>
-            <CardTitle>{profile.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>Age: {profile.age}</p>
-            <p>Location: {profile.location}</p>
-          </CardContent>
-          <CardFooter>
-            <Button>View Profile</Button>
-          </CardFooter>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function ChatList() {
-  const { chats, setActiveChat, activeChat } = useMessage()
-
-  return (
-    <Card className="h-[400px]">
+    <Card>
       <CardHeader>
-        <CardTitle>Chats</CardTitle>
+        <CardTitle>User Profile</CardTitle>
+        <CardDescription>Your personal information</CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[300px]">
-          {chats.map(chat => (
-            <div
-              key={chat.id}
-              className={`p-2 cursor-pointer ${activeChat === chat.id ? 'bg-muted' : ''}`}
-              onClick={() => setActiveChat(chat.id)}
-            >
-              <h3 className="font-semibold">{chat.userName}</h3>
-              <p className="text-sm text-muted-foreground">{chat.lastMessage}</p>
-            </div>
-          ))}
-        </ScrollArea>
+        {isEditing ? (
+          <ProfileEditForm onCancel={() => setIsEditing(false)} />
+        ) : (
+          <div className="space-y-2">
+            <p><strong>Name:</strong> {user.name}</p>
+            <p><strong>Email:</strong> {user.email}</p>
+            <p><strong>Age:</strong> {user.age}</p>
+            <p><strong>Location:</strong> {user.location}</p>
+            <p><strong>Bio:</strong> {user.bio}</p>
+          </div>
+        )}
       </CardContent>
-    </Card>
-  )
-}
-
-function ChatWindow() {
-  const { messages, sendMessage, activeChat, chats } = useMessage()
-  const [newMessage, setNewMessage] = useState('')
-
-  const activeChatMessages = messages.filter(
-    msg => msg.senderId === activeChat || msg.receiverId === activeChat
-  )
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (newMessage.trim() && activeChat) {
-      sendMessage(activeChat, newMessage.trim())
-      setNewMessage('')
-    }
-  }
-
-  if (!activeChat) {
-    return (
-      <Card className="h-[400px] flex items-center justify-center">
-        <CardContent>
-          <p className="text-muted-foreground">Select a chat to start messaging</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const chatPartner = chats.find(chat => chat.id === activeChat)
-
-  return (
-    <Card className="h-[400px] flex flex-col">
-      <CardHeader>
-        <CardTitle>{chatPartner?.userName}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex-grow overflow-auto">
-        <ScrollArea className="h-[250px]">
-          {activeChatMessages.map(msg => (
-            <div
-              key={msg.id}
-              className={`mb-2 p-2 rounded-lg ${msg.senderId === activeChat ? 'bg-muted text-left' : 'bg-primary text-primary-foreground text-right'
-                }`}
-            >
-              {msg.content}
-            </div>
-          ))}
-        </ScrollArea>
-      </CardContent>
-      <CardFooter>
-        <form onSubmit={handleSendMessage} className="flex w-full">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-grow"
-          />
-          <Button type="submit" className="ml-2">
-            <Send className="h-4 w-4" />
-            <span className="sr-only">Send</span>
+      {!isEditing && (
+        <CardFooter>
+          <Button onClick={() => setIsEditing(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Profile
           </Button>
-        </form>
-      </CardFooter>
+        </CardFooter>
+      )}
     </Card>
   )
 }
 
-function MessagingTab() {
+function ProfileEditForm({ onCancel }: { onCancel: () => void }) {
+  const { user, updateProfile } = useAuth()
+  const [name, setName] = useState(user?.name || '')
+  const [age, setAge] = useState(user?.age?.toString() || '')
+  const [location, setLocation] = useState(user?.location || '')
+  const [bio, setBio] = useState(user?.bio || '')
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await updateProfile({
+      name,
+      age: parseInt(age),
+      location,
+      bio,
+    })
+    onCancel()
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <ChatList />
-      <ChatWindow />
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="age">Age</Label>
+        <Input
+          id="age"
+          type="number"
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="location">Location</Label>
+        <Input
+          id="location"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="bio">Bio</Label>
+        <Textarea
+          id="bio"
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          rows={4}
+        />
+      </div>
+      <div className="flex justify-end space-x-2">
+        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button type="submit">Save Changes</Button>
+      </div>
+    </form>
   )
 }
 
@@ -212,24 +186,6 @@ function AppContent() {
   return <AuthenticatedApp />
 }
 
-export function DatingSiteClone() {
-  return (
-    <AuthProvider>
-      <MessageProvider>
-        <div className="min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
-          <Header />
-          <AppContent />
-          <footer className="bg-white mt-12">
-            <div className="container mx-auto px-4 py-6 text-center text-gray-600">
-              <p>&copy; 2023 Filipino Hearts. All rights reserved.</p>
-            </div>
-          </footer>
-        </div>
-      </MessageProvider>
-    </AuthProvider>
-  )
-}
-
 function LoginForm() {
   const { login } = useAuth()
   const [email, setEmail] = useState('')
@@ -246,30 +202,28 @@ function LoginForm() {
         <CardTitle>Login</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit">Login</Button>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit">Login</Button>
         </form>
       </CardContent>
     </Card>
@@ -293,42 +247,85 @@ function RegisterForm() {
         <CardTitle>Register</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit">Register</Button>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit">Register</Button>
         </form>
       </CardContent>
     </Card>
+  )
+}
+
+function ProfileList() {
+  const profiles = [
+    { id: 1, name: 'Maria Santos', age: 28, location: 'Manila' },
+    { id: 2, name: 'Juan dela Cruz', age: 32, location: 'Cebu' },
+    { id: 3, name: 'Ana Reyes', age: 25, location: 'Davao' },
+    // Add more profiles as needed
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {profiles.map(profile => (
+        <Card key={profile.id}>
+          <CardHeader>
+            <CardTitle>{profile.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Age: {profile.age}</p>
+            <p>Location: {profile.location}</p>
+          </CardContent>
+          <CardFooter>
+            <Button>View Profile</Button>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function DatingSiteClone() {
+  return (
+    <AuthProvider>
+      <MessageProvider>
+        <div className="min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
+          <Header />
+          <AppContent />
+          <footer className="bg-white mt-12">
+            <div className="container mx-auto px-4 py-6 text-center text-gray-600">
+              <p>&copy; 2023 Filipino Hearts. All rights reserved.</p>
+            </div>
+          </footer>
+        </div>
+      </MessageProvider>
+    </AuthProvider>
   )
 }
