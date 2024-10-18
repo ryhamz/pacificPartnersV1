@@ -45,6 +45,34 @@ function Header() {
 
 // ... (Keep the existing ProfileList and UserProfile components)
 
+function ProfileList() {
+  const profiles = [
+    { id: 1, name: 'Maria Santos', age: 28, location: 'Manila' },
+    { id: 2, name: 'Juan dela Cruz', age: 32, location: 'Cebu' },
+    { id: 3, name: 'Ana Reyes', age: 25, location: 'Davao' },
+    // Add more profiles as needed
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {profiles.map(profile => (
+        <Card key={profile.id}>
+          <CardHeader>
+            <CardTitle>{profile.name}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Age: {profile.age}</p>
+            <p>Location: {profile.location}</p>
+          </CardContent>
+          <CardFooter>
+            <Button>View Profile</Button>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 function ChatList() {
   const { chats, setActiveChat, activeChat } = useMessage()
 
@@ -109,9 +137,8 @@ function ChatWindow() {
           {activeChatMessages.map(msg => (
             <div
               key={msg.id}
-              className={`mb-2 p-2 rounded-lg ${
-                msg.senderId === activeChat ? 'bg-muted text-left' : 'bg-primary text-primary-foreground text-right'
-              }`}
+              className={`mb-2 p-2 rounded-lg ${msg.senderId === activeChat ? 'bg-muted text-left' : 'bg-primary text-primary-foreground text-right'
+                }`}
             >
               {msg.content}
             </div>
@@ -200,5 +227,108 @@ export function DatingSiteClone() {
         </div>
       </MessageProvider>
     </AuthProvider>
+  )
+}
+
+function LoginForm() {
+  const { login } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    login(email, password)
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Login</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit">Login</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
+
+function RegisterForm() {
+  const { register } = useAuth()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    register(name, email, password)
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Register</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit">Register</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   )
 }
