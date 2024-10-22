@@ -10,20 +10,36 @@ import { MessageProvider, useMessage } from './message-context'
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { SearchProvider, useSearch } from './search-context'
 
 // ... (Keep the existing LoginForm, RegisterForm, Header, ProfileList, ChatList, ChatWindow, and MessagingTab components)
 
 function Header() {
   const { user, logout } = useAuth()
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const { setSearchTerm: setGlobalSearchTerm } = useSearch()
+
+  const handleSearch = () => {
+    setGlobalSearchTerm(searchTerm)
+  }
 
   return (
     <header className="bg-white shadow-md">
       <div className="container mx-auto px-4 py-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-pink-600">Filipino Hearts</h1>
+        <div className="flex items-center space-x-2">
+          <Input
+            type="text"
+            placeholder="Search profiles..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-64"
+          />
+          <Button onClick={handleSearch}>Search</Button>
+        </div>
         <nav className={`${showMobileMenu ? 'flex' : 'hidden'} md:flex flex-col md:flex-row absolute md:relative top-full left-0 right-0 bg-white md:bg-transparent z-50 md:z-auto space-y-2 md:space-y-0 md:space-x-4 p-4 md:p-0`}>
           <Button variant="ghost" onClick={() => setShowMobileMenu(false)}>Home</Button>
-          <Button variant="ghost" onClick={() => setShowMobileMenu(false)}>Search</Button>
           <Button variant="ghost" onClick={() => setShowMobileMenu(false)}>Messages</Button>
           <Button variant="ghost" onClick={() => setShowMobileMenu(false)}>Profile</Button>
           {user && (
@@ -286,6 +302,7 @@ function RegisterForm() {
 
 function ProfileList() {
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const { searchTerm } = useSearch();
   const profiles = [
     { id: 1, name: 'Maria Santos', age: 28, location: 'Manila', bio: 'I love exploring new places and trying local cuisines.' },
     { id: 2, name: 'Juan dela Cruz', age: 32, location: 'Cebu', bio: 'Passionate about music and outdoor activities.' },
@@ -293,10 +310,16 @@ function ProfileList() {
     // Add more profiles as needed
   ];
 
+  const filteredProfiles = profiles.filter(profile =>
+    profile.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    profile.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    profile.bio.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {profiles.map(profile => (
+        {filteredProfiles.map(profile => (
           <Card key={profile.id}>
             <CardHeader>
               <CardTitle>{profile.name}</CardTitle>
@@ -319,8 +342,14 @@ function ProfileList() {
 }
 
 function ProfileModal({ profile, onClose }) {
+  const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleOutsideClick}>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{profile.name}</CardTitle>
@@ -414,15 +443,12 @@ export function DatingSiteClone() {
   return (
     <AuthProvider>
       <MessageProvider>
-        <div className="min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
-          <Header />
-          <AppContent />
-          <footer className="bg-white mt-12">
-            <div className="container mx-auto px-4 py-6 text-center text-gray-600">
-              <p>&copy; 2023 Filipino Hearts. All rights reserved.</p>
-            </div>
-          </footer>
-        </div>
+        <SearchProvider>
+          <div className="min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
+            <Header />
+            <AppContent />
+          </div>
+        </SearchProvider>
       </MessageProvider>
     </AuthProvider>
   )
