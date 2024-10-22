@@ -312,6 +312,62 @@ function ProfileList() {
   );
 }
 
+function MessagingTab() {
+  const { chats, messages, sendMessage, setActiveChat, activeChat } = useMessage()
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card className="md:col-span-1">
+        <CardHeader>
+          <CardTitle>Chats</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[400px]">
+            {chats.map(chat => (
+              <div
+                key={chat.id}
+                className={`p-2 cursor-pointer ${activeChat === chat.id ? 'bg-secondary' : ''}`}
+                onClick={() => setActiveChat(chat.id)}
+              >
+                <p className="font-semibold">{chat.userName}</p>
+                <p className="text-sm text-muted-foreground">{chat.lastMessage}</p>
+              </div>
+            ))}
+          </ScrollArea>
+        </CardContent>
+      </Card>
+      <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle>Messages</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[300px]">
+            {messages.filter(m => m.senderId === activeChat || m.receiverId === activeChat).map(message => (
+              <div key={message.id} className={`mb-2 ${message.senderId === activeChat ? 'text-right' : ''}`}>
+                <p className="text-sm text-muted-foreground">{new Date(message.timestamp).toLocaleString()}</p>
+                <p>{message.content}</p>
+              </div>
+            ))}
+          </ScrollArea>
+        </CardContent>
+        <CardFooter>
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            const input = e.currentTarget.elements.namedItem('message') as HTMLInputElement
+            if (input.value.trim() && activeChat) {
+              sendMessage(activeChat, input.value.trim())
+              input.value = ''
+            }
+          }} className="flex w-full">
+            <Input name="message" placeholder="Type a message..." className="flex-grow mr-2" />
+            <Button type="submit">Send</Button>
+          </form>
+        </CardFooter>
+      </Card>
+    </div>
+  )
+}
+
 export function DatingSiteClone() {
   return (
     <AuthProvider>
