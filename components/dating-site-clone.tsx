@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Heart, MessageCircle, User, LogOut, Send, Edit } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -214,9 +214,9 @@ function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="login-password">Password</Label>
             <Input
-              id="password"
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -268,9 +268,9 @@ function RegisterForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="register-password">Password</Label>
             <Input
-              id="password"
+              id="register-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -285,35 +285,79 @@ function RegisterForm() {
 }
 
 function ProfileList() {
+  const [selectedProfile, setSelectedProfile] = useState(null);
   const profiles = [
-    { id: 1, name: 'Maria Santos', age: 28, location: 'Manila' },
-    { id: 2, name: 'Juan dela Cruz', age: 32, location: 'Cebu' },
-    { id: 3, name: 'Ana Reyes', age: 25, location: 'Davao' },
+    { id: 1, name: 'Maria Santos', age: 28, location: 'Manila', bio: 'I love exploring new places and trying local cuisines.' },
+    { id: 2, name: 'Juan dela Cruz', age: 32, location: 'Cebu', bio: 'Passionate about music and outdoor activities.' },
+    { id: 3, name: 'Ana Reyes', age: 25, location: 'Davao', bio: 'Aspiring photographer and nature enthusiast.' },
     // Add more profiles as needed
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {profiles.map(profile => (
-        <Card key={profile.id}>
-          <CardHeader>
-            <CardTitle>{profile.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>Age: {profile.age}</p>
-            <p>Location: {profile.location}</p>
-          </CardContent>
-          <CardFooter>
-            <Button>View Profile</Button>
-          </CardFooter>
-        </Card>
-      ))}
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {profiles.map(profile => (
+          <Card key={profile.id}>
+            <CardHeader>
+              <CardTitle>{profile.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Age: {profile.age}</p>
+              <p>Location: {profile.location}</p>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={() => setSelectedProfile(profile)}>View Profile</Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+      {selectedProfile && (
+        <ProfileModal profile={selectedProfile} onClose={() => setSelectedProfile(null)} />
+      )}
+    </>
+  );
+}
+
+function ProfileModal({ profile, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>{profile.name}</CardTitle>
+          <CardDescription>{profile.age} years old, {profile.location}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">{profile.bio}</p>
+          {/* Add more profile details here */}
+        </CardContent>
+        <CardFooter className="flex justify-end">
+          <Button onClick={onClose}>Close</Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
 
 function MessagingTab() {
   const { chats, messages, sendMessage, setActiveChat, activeChat } = useMessage()
+  const [newMessage, setNewMessage] = useState('')
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newMessage.trim() && activeChat) {
+      sendMessage(activeChat, newMessage.trim())
+      setNewMessage('')
+    }
+  }
+
+  if (!isClient) {
+    return null // or a loading spinner
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -351,15 +395,13 @@ function MessagingTab() {
           </ScrollArea>
         </CardContent>
         <CardFooter>
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            const input = e.currentTarget.elements.namedItem('message') as HTMLInputElement
-            if (input.value.trim() && activeChat) {
-              sendMessage(activeChat, input.value.trim())
-              input.value = ''
-            }
-          }} className="flex w-full">
-            <Input name="message" placeholder="Type a message..." className="flex-grow mr-2" />
+          <form onSubmit={handleSendMessage} className="flex w-full">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              className="flex-grow mr-2"
+            />
             <Button type="submit">Send</Button>
           </form>
         </CardFooter>
