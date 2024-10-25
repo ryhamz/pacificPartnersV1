@@ -2,9 +2,19 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+Requires Node.js version 18+
 
 ```bash
+ nvm install 20
+ nvm use 20
+ node -v
+ ```
+
+First, install dependencies. Then run the development server:
+
+```bash
+npm install
+
 npm run dev
 # or
 yarn dev
